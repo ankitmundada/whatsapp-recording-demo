@@ -6,18 +6,23 @@ class ChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: RecordingControllerWidget(
-          maxWidth: constraints.maxWidth,
-          maxHeight: constraints.maxHeight,
-          onRecordingDone: () {
-            displaySnackbar(context, 'Recording Finished!');
-          },
-          onCancel: () {
-            displaySnackbar(context, 'Recording Cancelled.');
-          },
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Whatsapp Recorder Demo'),
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) => Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: RecordingControllerWidget(
+            maxWidth: constraints.maxWidth,
+            maxHeight: constraints.maxHeight,
+            onRecordingDone: () {
+              displaySnackbar(context, 'Recording Finished!');
+            },
+            onCancel: () {
+              displaySnackbar(context, 'Recording Cancelled.');
+            },
+          ),
         ),
       ),
     );
