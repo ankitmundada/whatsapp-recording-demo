@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AnimatedRecordingStrip extends StatefulWidget {
   final AnimationController controller;
@@ -32,7 +33,18 @@ class _AnimatedRecordingStripState extends State<AnimatedRecordingStrip> {
                   flex: 1,
                 ),
                 Expanded(
-                  child: const Text('< Slide to cancel', maxLines: 1),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.white,
+                    highlightColor: Colors.grey,
+                    child: Text(
+                      '< Slide to Unlock',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                   flex: 3,
                 ),
               ],
