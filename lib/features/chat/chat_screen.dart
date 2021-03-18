@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:whatsappaudio/commons/base/base_state.dart';
 import 'package:whatsappaudio/commons/blocs/audio_player/audio_player_bloc.dart';
 import 'package:whatsappaudio/commons/blocs/audio_recorder/audio_recorder_bloc.dart';
 import 'package:whatsappaudio/commons/utils/utils.dart';
@@ -47,10 +48,10 @@ class _ChatScreenWidgetState extends State<ChatScreenWidget> {
     _audioRecorderBloc = BlocProvider.of<AudioRecorderBloc>(context);
 
     _audioRecorderBloc.stream.listen((state) {
-      if (state is AudioRecordingUpdateRequestedStatus) {
+      if (state is AudioRecordingUpdateRequestedStatus &&
+          state.status == Status.SUCCESS) {
         if (state.event.done ?? false) {
-          // recording finished
-          // add recording bubble
+          // recording finished, so add send message event to chat bloc
           _chatBloc.add(AudioMessageSendRequested(state.recordedFile));
         } else if (state.event.cancel ?? false) {
           displaySnackbar(context, 'Recording Cancelled');
@@ -78,14 +79,16 @@ class _ChatScreenWidgetState extends State<ChatScreenWidget> {
     return StreamWidget(
       stream: _chatBloc.stream.whereType<MessageSendRequestedStatus>(),
       successBuilder: (context) => ListView.separated(
-          itemBuilder: (context, index) {
-            ChatMessage message = _chatBloc.messages[index];
-            return message.type == ChatMessageType.TEXT
-                ? TextMessageWidget(message)
-                : AudioMessageWidget(message);
-          },
-          separatorBuilder: (context, index) => const Divider(),
-          itemCount: _chatBloc.messages.length),
+        shrinkWrap: true,
+        itemBuilder: (context, index) {
+          ChatMessage message = _chatBloc.messages[index];
+          return message.type == ChatMessageType.TEXT
+              ? TextMessageWidget(message)
+              : AudioMessageWidget(message);
+        },
+        separatorBuilder: (context, index) => const Divider(),
+        itemCount: _chatBloc.messages.length,
+      ),
     );
   }
 }
