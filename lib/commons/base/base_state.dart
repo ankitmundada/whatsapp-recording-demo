@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:whatsappaudio/commons/base/base_exception.dart';
 
 enum Status {
   UNKNOWN,
@@ -11,7 +12,7 @@ enum Status {
 @immutable
 abstract class BaseState extends Equatable {
   final Status status;
-  final Exception exception;
+  final BaseException exception;
 
   const BaseState(this.status, [this.exception]);
 

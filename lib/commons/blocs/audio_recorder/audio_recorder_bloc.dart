@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:whatsappaudio/commons/base/base_exception.dart';
 import 'package:whatsappaudio/commons/base/base_state.dart';
 import 'package:whatsappaudio/commons/utils/app_logger.dart';
 import 'package:record/record.dart';
@@ -75,7 +76,6 @@ class AudioRecorderBloc extends Bloc<AudioRecorderEvent, AudioRecorderState> {
   }
 }
 
-class AudioRecorderBlocException implements Exception {
-  final String message;
-  const AudioRecorderBlocException(this.message);
+class AudioRecorderBlocException extends BaseException {
+  const AudioRecorderBlocException(String message) : super(message);
 }

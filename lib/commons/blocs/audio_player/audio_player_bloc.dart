@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:logger/logger.dart';
+import 'package:whatsappaudio/commons/base/base_exception.dart';
 import 'package:whatsappaudio/commons/base/base_state.dart';
 
 part 'audio_player_event.dart';

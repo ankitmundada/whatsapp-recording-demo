@@ -1,7 +1,8 @@
 part of 'audio_player_bloc.dart';
 
 abstract class AudioPlayerState extends BaseState {
-  const AudioPlayerState(Status status) : super(status);
+  const AudioPlayerState(Status status, [BaseException exception])
+      : super(status, exception);
 }
 
 class AudioPlayerInitial extends AudioPlayerState {

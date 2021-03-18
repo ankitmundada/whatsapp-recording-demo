@@ -1,7 +1,7 @@
 part of 'audio_recorder_bloc.dart';
 
 abstract class AudioRecorderState extends BaseState {
-  const AudioRecorderState(Status status, [Exception exception])
+  const AudioRecorderState(Status status, [BaseException exception])
       : super(status, exception);
 }
 
@@ -16,6 +16,6 @@ class AudioRecordingUpdateRequestedStatus extends AudioRecorderState {
     Status status,
     this.event, {
     this.recordedFile,
-    Exception exception,
+    BaseException exception,
   }) : super(status, exception);
 }
