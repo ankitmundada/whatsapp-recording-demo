@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:whatsappaudio/features/chat/widgets/animated_mic_button.dart';
-import 'package:whatsappaudio/features/chat/widgets/animated_recording_strip.dart';
+import 'package:whatsappaudio/features/chat/widgets/recording/animated_mic_button.dart';
+import 'package:whatsappaudio/features/chat/widgets/recording/animated_recording_strip.dart';
 
 class RecordingControllerWidget extends StatefulWidget {
   final double buttonUpperScale;
   final double maxWidth;
   final double maxHeight;
   final Function onCancel;
-
+  final Function onRecordingInitiated;
   final Function onRecordingDone;
+
   RecordingControllerWidget({
     Key key,
+    @required this.onRecordingInitiated,
     @required this.onRecordingDone,
+    this.onCancel,
     this.maxWidth,
     this.maxHeight,
     this.buttonUpperScale = 2.0,
-    this.onCancel,
   }) : super(key: key);
 
   @override
@@ -102,6 +104,7 @@ class _RecordingControllerWidgetState extends State<RecordingControllerWidget>
   void onLongPressStart(LongPressStartDetails details) {
     isRecordingCancelled = false;
     initForwardAnimation();
+    widget.onRecordingInitiated();
   }
 
   void onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
