@@ -11,8 +11,9 @@ enum Status {
 @immutable
 abstract class BaseState extends Equatable {
   final Status status;
+  final Exception exception;
 
-  const BaseState(this.status);
+  const BaseState(this.status, [this.exception]);
 
   @override
   List<Status> get props => [status];
