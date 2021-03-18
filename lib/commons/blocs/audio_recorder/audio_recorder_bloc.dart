@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:whatsappaudio/commons/base/base_exception.dart';
 import 'package:whatsappaudio/commons/base/base_state.dart';
 import 'package:whatsappaudio/commons/utils/app_logger.dart';
@@ -15,16 +18,38 @@ class AudioRecorderBloc extends Bloc<AudioRecorderEvent, AudioRecorderState> {
   AudioRecorderBloc() : super(const AudioRecorderInitial(Status.UNKNOWN));
 
   File _recordingFile;
+  Directory _recordingDir;
 
   Future<bool> get isRecording async => await Record.isRecording();
-  File get recordingFile {
+
+  Future<File> get recordingFile async {
     if (_recordingFile == null) {
-      _recordingFile =
-          File('recording_${DateTime.now().millisecondsSinceEpoch}.aac');
+      _recordingFile = File(
+        join((await recordingDir).absolute.path,
+            'recording_${DateTime.now().millisecondsSinceEpoch}.aac'),
+      );
     }
 
     return _recordingFile;
   }
+
+  Future<Directory> get recordingDir async {
+    if (_recordingDir == null) {
+      String path = join(
+        (await getApplicationDocumentsDirectory()).absolute.path,
+        'recordings',
+      );
+      _recordingDir = Directory(path);
+      if (!await _recordingDir.exists()) _recordingDir.create(recursive: true);
+    }
+    return _recordingDir;
+  }
+
+  Future<bool> get checkPermission async =>
+      (await Record.hasPermission() ||
+          (await Permission.microphone.request()) ==
+              PermissionStatus.granted) &&
+      ((await Permission.storage.request()) == PermissionStatus.granted);
 
   @override
   Stream<AudioRecorderState> mapEventToState(
@@ -41,23 +66,21 @@ class AudioRecorderBloc extends Bloc<AudioRecorderEvent, AudioRecorderState> {
           AudioRecordingUpdateRequested event) async* {
     yield AudioRecordingUpdateRequestedStatus(Status.LOADING, event);
     try {
-      bool result = await Record.hasPermission();
-
-      if (!result)
+      if (!(await checkPermission))
         throw const AudioRecorderBlocException('Permission Required');
 
       File file;
-      if (event.record) {
+      if (event.record ?? false) {
+        file = await recordingFile;
         await Record.start(
-          path: recordingFile.absolute.path,
+          path: file.absolute.path,
           encoder: AudioEncoder.AAC, // by default
         );
-        file = recordingFile;
-      } else if (event.done) {
+      } else if (event.done ?? false) {
         await Record.stop();
+        file = await recordingFile;
         _recordingFile = null;
-        file = recordingFile;
-      } else if (event.cancel) {
+      } else if (event.cancel ?? false) {
         await Record.stop();
         await _recordingFile.delete();
         _recordingFile = null;
