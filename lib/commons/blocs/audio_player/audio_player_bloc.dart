@@ -1,27 +1,41 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:just_audio/just_audio.dart' as audio;
 import 'package:logger/logger.dart';
 import 'package:whatsappaudio/commons/base/base_exception.dart';
 import 'package:whatsappaudio/commons/base/base_state.dart';
+import 'package:whatsappaudio/commons/models/audio_source.dart';
 
 part 'audio_player_event.dart';
 part 'audio_player_state.dart';
 
 class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
   final _log = Logger();
-  final _player = AudioPlayer();
+  final _player = audio.AudioPlayer();
 
-  bool get playing => _player.playing;
-  Duration get position => _player.position;
-  Stream<Duration> get positionStream =>
-      _player.positionStream.where((e) => e != null);
-  Stream<PlayerState> get playerStateStream => _player.playerStateStream;
-  Stream<bool> get playingStream =>
-      _player.playingStream.where((e) => e != null);
-  Stream<Duration> get durationStream => _player.durationStream;
+  bool playing(AudioSource source) =>
+      currentAudioSource == source &&
+      _player.playing &&
+      _player.playerState.processingState == audio.ProcessingState.ready;
+
+  Duration position(AudioSource source) =>
+      currentAudioSource == source ? _player.position : 0;
+
+  Stream<Duration> positionStream(AudioSource source) => _player.positionStream
+      .where((e) => e != null && currentAudioSource == source);
+
+  Stream<audio.PlayerState> playerStateStream(AudioSource source) =>
+      _player.playerStateStream.where((event) => currentAudioSource == source);
+
+  Stream<bool> playingStream(AudioSource source) => _player.playingStream
+      .where((e) => currentAudioSource == source && e != null);
+
+  Stream<Duration> durationStream(AudioSource source) =>
+      _player.durationStream.where((event) => currentAudioSource == source);
+
   Stream<Duration> spacedPositionStream(Duration space) {
     return _player.createPositionStream(minPeriod: space, maxPeriod: space);
   }
@@ -41,6 +55,7 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
     AudioPlayerEvent event,
   ) async* {
     if (event is AudioPlayerBlocInitiationRequested) {
+      // empty init
     } else if (event is AudioSourceUpdateRequested) {
       yield* _mapAudioSourceUpdateRequestedToState(event);
     } else if (event is AudioPlaybackUpdateRequested) {
@@ -76,20 +91,8 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       if (event.play ?? false) {
         _player.play();
         await _player.playingStream.firstWhere((isPlaying) => isPlaying);
-      } else if (event.pause ?? false) {
-        await _player.pause();
       } else if (event.stop ?? false) {
         await _player.stop();
-      } else if (event.dispose ?? false) {
-        await _player.dispose();
-      } else if (event.seekTo != null) {
-        await _player.seek(event.seekTo);
-      } else if (event.speed != null) {
-        await _player.setSpeed(event.speed);
-      } else if (event.volume != null) {
-        await _player.setVolume(event.volume);
-      } else if (event.clipTo != null && event.clipFrom != null) {
-        await _player.setClip(start: event.clipFrom, end: event.clipTo);
       }
       yield AudioPlaybackUpdateStaus(Status.SUCCESS, event);
     } catch (e, s) {
@@ -97,17 +100,4 @@ class AudioPlayerBloc extends Bloc<AudioPlayerEvent, AudioPlayerState> {
       yield AudioPlaybackUpdateStaus(Status.FAILURE, event);
     }
   }
-}
-
-enum AudioSourceType {
-  URL,
-  ASSET,
-  FILE,
-}
-
-class AudioSource {
-  final String value;
-  final AudioSourceType type;
-
-  const AudioSource(this.value, this.type);
 }

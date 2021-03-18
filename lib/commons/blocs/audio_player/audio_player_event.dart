@@ -27,31 +27,13 @@ class AudioSourceUpdateRequested extends AudioPlayerEvent {
 
 class AudioPlaybackUpdateRequested extends AudioPlayerEvent {
   final bool play;
-  final bool pause;
   final bool stop;
-  final bool dispose;
-
-  final Duration seekTo;
-
-  final double speed;
-  final double volume;
-
-  final Duration clipFrom;
-  final Duration clipTo;
 
   const AudioPlaybackUpdateRequested({
     this.play,
-    this.pause,
     this.stop,
-    this.dispose,
-    this.seekTo,
-    this.speed,
-    this.volume,
-    this.clipFrom,
-    this.clipTo,
   });
 
   @override
-  List<Object> get props =>
-      [play, pause, stop, seekTo, speed, volume, clipFrom, clipTo];
+  List<Object> get props => [play, stop];
 }
